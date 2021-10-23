@@ -1,0 +1,98 @@
+﻿@page "/addcustomer"
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+
+@using Common.Services
+@using Common.Models
+@inject SqsCustomerService customerService;
+<p>This demo demonstrates the use of AWS SQS service.</p>
+<div class="card m-3">
+    <h4 class="card-header">Blazor WebAssembly Form Validation Example</h4>
+    <div class="card-body">
+        <EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmit" @onreset="HandleReset">
+            <DataAnnotationsValidator />
+            <div class="form-row">
+                <div class="form-group col-5">
+                    <label>First Name</label>
+                    <InputText @bind-Value="model.Name" class="form-control" />
+                    <ValidationMessage For="@(() => model.Name)" />
+                </div>
+                <div class="form-group col-5">
+                    <label>Last Name</label>
+                    <InputText @bind-Value="model.Surname" class="form-control" />
+                    <ValidationMessage For="@(() => model.Surname)" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col">
+                    <label>Company</label>
+                    <InputText @bind-Value="model.Company" class="form-control" />
+                    <ValidationMessage For="@(() => model.Company)" />
+                </div>
+                <div class="form-group col">
+                    <label>Email</label>
+                    <InputText @bind-Value="model.Email" class="form-control" />
+                    <ValidationMessage For="@(() => model.Email)" />
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary mr-1">Register</button>
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DispalyCustomers />
+
+@code {
+    private Model model = new Model();
+    private EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        //var modelJson = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true });
+        var cus = new Customer()
+        {
+            Name = model.Name,
+            Surname = model.Surname,
+            Company = model.Company,
+            Email = model.Email
+        };
+        await customerService.AddCustomerAsync(cus);
+
+    }
+
+    private void HandleReset()
+    {
+        model = new Model();
+        editContext = new EditContext(model);
+    }
+
+    private class Model
+    {
+
+        [Required]
+        [Display(Name = "First Name")]
+        public string Name { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string Surname { get; set; }
+
+        [Required]
+        [Display(Name = "Comapny")]
+        public string Company { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+}
+
+

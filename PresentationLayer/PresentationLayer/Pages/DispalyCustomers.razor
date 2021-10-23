@@ -1,0 +1,76 @@
+﻿@page "/displaycustomers"
+@implements IDisposable
+@using Common.Services
+@using Common.Models
+@inject SqsCustomerService customerService;
+
+<h3>  </h3>
+<button class="btn btn-primary" @onclick="Clear">Delete all Customers</button>
+
+@if (customers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Company</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in customers)
+            {
+                <tr>
+                    <td>@customer.Name</td>
+                    <td>@customer.Surname</td>
+                    <td>@customer.Company</td>
+                    <td>@customer.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    List<Customer> customers = new List<Customer>();
+    protected override async Task OnInitializedAsync()
+    {
+        customers = customerService.GetCurrentCustomer();
+        customerService.NotifyCustomersToDisplayBus += Handle;
+    }
+
+    private async void Handle(object sender, List<Customer> cust)
+    {
+        customers = customerService.GetCurrentCustomer();
+
+
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        customerService.NotifyCustomersToDisplayBus -= Handle;
+    }
+
+
+    private async Task Clear()
+    {
+        var cust = new Customer()
+        {
+            Name = "QNdVlMuUPZfWRKDmztoePkvwsYbgym"
+        };
+        await customerService.AddCustomerAsync(cust);
+    }
+
+}
+
+
