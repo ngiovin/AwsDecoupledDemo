@@ -1,0 +1,13 @@
+[Unit] 
+Description=DotNet Core application on Amazon Linux 2
+
+[Service] 
+WorkingDirectory=/var/out 
+ExecStart=/usr/bin/dotnet /var/out/StorageLayer.dll 
+Restart=always 
+RestartSec=10 # Restart service after 10 seconds if dotnet service crashes 
+SyslogIdentifier=offershare-web-app
+Environment=ASPNETCORE_ENVIRONMENT=Production 
+
+[Install] 
+WantedBy=multi-user.target
